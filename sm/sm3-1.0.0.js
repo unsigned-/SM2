@@ -5,52 +5,70 @@
     var Hasher = C_lib.Hasher;
     var C_algo = C.algo;
     var W = [];
+    var T_00_15 = 2043430169;
+    var T_16_63 = 2055708042;
     var SM3 = C_algo.SM3 = Hasher.extend({
         _doReset: function () {
-            this._hash = new WordArray.init([0x7380166f, 0x4914b2b9, 0x172442d7, 0xda8a0600, 0xa96f30bc, 0x163138aa, 0xe38dee4d, 0xb0fb0e4e])
+            this._hash = new WordArray.init([1937774191, 1226093241, 388252375, -628488704, -1452330820, 372324522, -477237683, -1325724082])
         }, _doProcessBlock: function (M, offset) {
             var H = this._hash.words;
-            var a = H[0];
-            var b = H[1];
-            var c = H[2];
-            var d = H[3];
-            var e = H[4];
-            for (var i = 0; i < 80; i++) {
-                if (i < 16) {
-                    W[i] = M[offset + i] | 0
-                } else {
-                    var n = W[i - 3] ^ W[i - 8] ^ W[i - 14] ^ W[i - 16];
-                    W[i] = (n << 1) | (n >>> 31)
-                }
-                var t = ((a << 5) | (a >>> 27)) + e + W[i];
-                if (i < 20) {
-                    t += ((b & c) | (~b & d)) + 0x5a827999
-                } else if (i < 40) {
-                    t += (b ^ c ^ d) + 0x6ed9eba1
-                } else if (i < 60) {
-                    t += ((b & c) | (b & d) | (c & d)) - 0x70e44324
-                } else {
-                    t += (b ^ c ^ d) - 0x359d3e2a
-                }
-                e = d;
-                d = c;
-                c = (b << 30) | (b >>> 2);
-                b = a;
-                a = t
-            }
-            H[0] = (H[0] + a) | 0;
-            H[1] = (H[1] + b) | 0;
-            H[2] = (H[2] + c) | 0;
-            H[3] = (H[3] + d) | 0;
-            H[4] = (H[4] + e) | 0
+            var H0 = Array(8);
+            var c = Array(64);
+            var X = Array(68);
+            var i, f, g;
+            Array.Copy(H, 0, H0, 0, H.length);
+            
+		    for (i = 0; 16 > i; i++)
+                X[i] = M[offset + i] | 0;
+            
+		    for (i = 16; 68 > i; i++)
+		        X[i] = this.P1(X[i - 16] ^ X[i - 9] ^ this.ROTATE(X[i - 3], 15)) ^ this.ROTATE(X[i - 13], 7) ^ X[i - 6];
+		        
+            for (i = 0; 64 > i; i++)
+		        c[i] = X[i] ^ X[i + 4];
+		        
+		    for (i = 0; 16 > i; i++)
+		        g = this.ROTATE(H0[0], 12),
+		        f = Int32.parse(Int32.parse(g + H0[4]) + this.ROTATE(T_00_15, i)),
+		        f = this.ROTATE(f, 7),
+		        g ^= f,
+		        g = Int32.parse(Int32.parse(this.FF_00_15(H0[0], H0[1], H0[2]) + H0[3]) + g) + c[i],
+		        f = Int32.parse(Int32.parse(this.GG_00_15(H0[4], H0[5], H0[6]) + H0[7]) + f) + X[i],
+		        H0[3] = H0[2],
+		        H0[2] = this.ROTATE(H0[1], 9),
+		        H0[1] = H0[0],
+		        H0[0] = g,
+		        H0[7] = H0[6],
+		        H0[6] = this.ROTATE(H0[5], 19),
+		        H0[5] = H0[4],
+		        H0[4] = this.P0(f);
+		        
+            for (i = 16; 64 > i; i++)
+		        g = this.ROTATE(H0[0], 12),
+		        f = Int32.parse(Int32.parse(g + H0[4]) + this.ROTATE(T_16_63, i)),
+		        f = this.ROTATE(f, 7),
+		        g ^= f,
+		        g = Int32.parse(Int32.parse(this.FF_16_63(H0[0], H0[1], H0[2]) + H0[3]) + g) + c[i],
+		        f = Int32.parse(Int32.parse(this.GG_16_63(H0[4], H0[5], H0[6]) + H0[7]) + f) + X[i],
+		        H0[3] = H0[2],
+		        H0[2] = this.ROTATE(H0[1], 9),
+		        H0[1] = H0[0],
+		        H0[0] = g,
+		        H0[7] = H0[6],
+		        H0[6] = this.ROTATE(H0[5], 19),
+		        H0[5] = H0[4],
+		        H0[4] = this.P0(f);
+		        
+            for (i = 0; 8 > i; i++)
+		        H[i] ^= Int32.parse(H0[i]);
         }, _doFinalize: function () {
             var data = this._data;
             var dataWords = data.words;
             var nBitsTotal = this._nDataBytes * 8;
             var nBitsLeft = data.sigBytes * 8;
             dataWords[nBitsLeft >>> 5] |= 0x80 << (24 - nBitsLeft % 32);
-            dataWords[(((nBitsLeft + 64) >>> 9) << 4) + 14] = Math.floor(nBitsTotal / 0x100000000);
-            dataWords[(((nBitsLeft + 64) >>> 9) << 4) + 15] = nBitsTotal;
+            dataWords[(((nBitsLeft + 64) >>> 9) << 4) + 14] = this.URShiftLong(nBitsTotal, 32);
+            dataWords[(((nBitsLeft + 64) >>> 9) << 4) + 15] = nBitsTotal & 4294967295;
             data.sigBytes = dataWords.length * 4;
             this._process();
             return this._hash
