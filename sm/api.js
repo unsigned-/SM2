@@ -81,7 +81,7 @@ function sm2CertCrypt(data, certData, cipherMode) {
     msgData = cipher.GetWords(msgData.toString());
 
     var encryptData = cipher.Encrypt(userKey, msgData);
-    return encryptData;
+    return '04' + encryptData;
 }
 
 // exports.SecureRandom = SecureRandom;
