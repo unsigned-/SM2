@@ -17,50 +17,50 @@
             var X = Array(68);
             var i, f, g;
             Array.Copy(H, 0, H0, 0, H.length);
-            
-		    for (i = 0; 16 > i; i++)
+
+            for (i = 0; 16 > i; i++)
                 X[i] = M[offset + i] | 0;
-            
-		    for (i = 16; 68 > i; i++)
-		        X[i] = this.P1(X[i - 16] ^ X[i - 9] ^ this.ROTATE(X[i - 3], 15)) ^ this.ROTATE(X[i - 13], 7) ^ X[i - 6];
+
+            for (i = 16; 68 > i; i++)
+                X[i] = this.P1(X[i - 16] ^ X[i - 9] ^ this.ROTATE(X[i - 3], 15)) ^ this.ROTATE(X[i - 13], 7) ^ X[i - 6];
 		        
             for (i = 0; 64 > i; i++)
-		        c[i] = X[i] ^ X[i + 4];
-		        
-		    for (i = 0; 16 > i; i++)
-		        g = this.ROTATE(H0[0], 12),
-		        f = Int32.parse(Int32.parse(g + H0[4]) + this.ROTATE(T_00_15, i)),
-		        f = this.ROTATE(f, 7),
-		        g ^= f,
-		        g = Int32.parse(Int32.parse(this.FF_00_15(H0[0], H0[1], H0[2]) + H0[3]) + g) + c[i],
-		        f = Int32.parse(Int32.parse(this.GG_00_15(H0[4], H0[5], H0[6]) + H0[7]) + f) + X[i],
-		        H0[3] = H0[2],
-		        H0[2] = this.ROTATE(H0[1], 9),
-		        H0[1] = H0[0],
-		        H0[0] = g,
-		        H0[7] = H0[6],
-		        H0[6] = this.ROTATE(H0[5], 19),
-		        H0[5] = H0[4],
-		        H0[4] = this.P0(f);
+                c[i] = X[i] ^ X[i + 4];
+
+            for (i = 0; 16 > i; i++)
+                g = this.ROTATE(H0[0], 12),
+                f = Int32.parse(Int32.parse(g + H0[4]) + this.ROTATE(T_00_15, i)),
+                f = this.ROTATE(f, 7),
+                g ^= f,
+                g = Int32.parse(Int32.parse(this.FF_00_15(H0[0], H0[1], H0[2]) + H0[3]) + g) + c[i],
+                f = Int32.parse(Int32.parse(this.GG_00_15(H0[4], H0[5], H0[6]) + H0[7]) + f) + X[i],
+                H0[3] = H0[2],
+                H0[2] = this.ROTATE(H0[1], 9),
+                H0[1] = H0[0],
+                H0[0] = g,
+                H0[7] = H0[6],
+                H0[6] = this.ROTATE(H0[5], 19),
+                H0[5] = H0[4],
+                H0[4] = this.P0(f);
 		        
             for (i = 16; 64 > i; i++)
-		        g = this.ROTATE(H0[0], 12),
-		        f = Int32.parse(Int32.parse(g + H0[4]) + this.ROTATE(T_16_63, i)),
-		        f = this.ROTATE(f, 7),
-		        g ^= f,
-		        g = Int32.parse(Int32.parse(this.FF_16_63(H0[0], H0[1], H0[2]) + H0[3]) + g) + c[i],
-		        f = Int32.parse(Int32.parse(this.GG_16_63(H0[4], H0[5], H0[6]) + H0[7]) + f) + X[i],
-		        H0[3] = H0[2],
-		        H0[2] = this.ROTATE(H0[1], 9),
-		        H0[1] = H0[0],
-		        H0[0] = g,
-		        H0[7] = H0[6],
-		        H0[6] = this.ROTATE(H0[5], 19),
-		        H0[5] = H0[4],
-		        H0[4] = this.P0(f);
+                g = this.ROTATE(H0[0], 12),
+                f = Int32.parse(Int32.parse(g + H0[4]) + this.ROTATE(T_16_63, i)),
+                f = this.ROTATE(f, 7),
+                g ^= f,
+                g = Int32.parse(Int32.parse(this.FF_16_63(H0[0], H0[1], H0[2]) + H0[3]) + g) + c[i],
+                f = Int32.parse(Int32.parse(this.GG_16_63(H0[4], H0[5], H0[6]) + H0[7]) + f) + X[i],
+                H0[3] = H0[2],
+                H0[2] = this.ROTATE(H0[1], 9),
+                H0[1] = H0[0],
+                H0[0] = g,
+                H0[7] = H0[6],
+                H0[6] = this.ROTATE(H0[5], 19),
+                H0[5] = H0[4],
+                H0[4] = this.P0(f);
 		        
             for (i = 0; 8 > i; i++)
-		        H[i] ^= Int32.parse(H0[i]);
+                H[i] ^= Int32.parse(H0[i]);
         }, _doFinalize: function () {
             var data = this._data;
             var dataWords = data.words;
@@ -76,7 +76,48 @@
             var clone = Hasher.clone.call(this);
             clone._hash = this._hash.clone();
             return clone
-        }
+        }, ROTATE: function(a, b) {
+            return a << b | this.URShift(a, 32 - b)
+        }, P0: function(a) {
+            return a ^ this.ROTATE(a, 9) ^ this.ROTATE(a, 17)
+        }, P1: function(a) {
+            return a ^ this.ROTATE(a, 15) ^ this.ROTATE(a, 23)
+        }, FF_00_15: function(a, b, c) {
+            return a ^ b ^ c
+        }, FF_16_63: function(a, b, c) {
+            return a & b | a & c | b & c
+        }, GG_00_15: function(a, b, c) {
+            return a ^ b ^ c
+        }, GG_16_63: function(a, b, c) {
+            return a & b | ~a & c
+        }, URShift: function(a, b) {
+            if (a > Int32.maxValue || a < Int32.minValue)
+                a = Int32.parse(a);
+            return 0 <= a ? a >> b : (a >> b) + (2 << ~b)
+        }, URShiftLong: function(a, b) {
+            var c = new BigInteger;
+            c.fromInt(a);
+            if (0 <= c.signum())
+                a = c.shiftRight(b).intValue();
+            else {
+                var d = new BigInteger;
+                d.fromInt(2);
+                var e = ~b, c = "";
+                if (0 > e) {
+                    d = 64 + e;
+                    for (e = 0; e < d; e++)
+                        c += "0";
+                    d = new BigInteger;
+                    d.fromInt(a >> b);
+                    a = new BigInteger("10" + c,2);
+                    a.toRadix(10);
+                    a = a.add(d).toRadix(10)
+                } else
+                    c = d.shiftLeft(~b).intValue(),
+                    a = (a >> b) + c
+            }
+            return a
+        },
     });
     C.SM3 = Hasher._createHelper(SM3);
     C.HmacSM3 = Hasher._createHmacHelper(SM3)
